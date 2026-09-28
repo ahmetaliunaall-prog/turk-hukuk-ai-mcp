@@ -7,6 +7,8 @@ __pycache__/
 .netlify/
 data/
 config/local.json
+config/access.json
 tests/live-report.json
 tests/research-live.json
+tests/benchmark-latest.json
 *.log

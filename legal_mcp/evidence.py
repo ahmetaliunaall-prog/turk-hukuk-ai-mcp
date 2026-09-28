@@ -2,6 +2,7 @@ from dataclasses import dataclass,field,asdict
 import hashlib,re
 from urllib.parse import urlparse
 from datetime import datetime,timezone
+from .planning import normalize,similarity
 
 ALLOWED={'emsal.uyap.gov.tr','karararama.danistay.gov.tr','kararlarbilgibankasi.anayasa.gov.tr','mevzuat.adalet.gov.tr','mevzuat.gov.tr','www.mevzuat.gov.tr','bedesten.adalet.gov.tr'}
 
@@ -25,8 +26,6 @@ class Evidence:
         self.fetched_at=datetime.now(timezone.utc).isoformat()
         return self.verified
 
-def normalize(text): return text.replace('İ','i').replace('I','ı').lower()
-
 def deduplicate(items):
     seen=set();result=[]
     for e in items:
@@ -36,18 +35,22 @@ def deduplicate(items):
 
 def rank(items,analysis):
     """Hafif konu/alt konu/sorun/kavram/madde/mahkeme eşleşmesi; açıklanabilir."""
-    fields=[(analysis.hukuki_konu,2),(analysis.alt_konu,3),(analysis.hukuki_sorun,4)]
+    fields=[('konu',analysis.hukuki_konu,2),('alt_konu',analysis.alt_konu,3),('hukuki_sorun',analysis.hukuki_sorun,4),('dava_turu',analysis.dava_turu,2)]
     for e in items:
         body=normalize(e.title+' '+e.text)
         parts={}
-        for text,weight in fields:
-            words=set(re.findall(r'\w{4,}',normalize(text)))
-            parts[text]=weight*sum(w in body for w in words)/max(1,len(words))
-        parts['kavram']=sum(normalize(k) in body for k in analysis.anahtar_kavramlar)
+        for label,text,weight in fields:
+            parts[label]=round(weight*similarity(text,body),3)
+        parts['kavram']=round(sum(similarity(k,body) for k in analysis.anahtar_kavramlar),3)
         parts['mevzuat']=sum(bool(re.search(r'\b'+re.escape(l.mevzuat_no)+r'\b',body)) for l in analysis.ilgili_mevzuat if l.mevzuat_no)
+        parts['madde']=sum(bool(re.search(r'(?:madde\s*'+str(n)+r'\b|\b'+str(n)+r'\s*\.?\s*(?:inci|uncu|nci)?\s*madde)',body)) or str(e.metadata.get('madde_no'))==str(n) for l in analysis.ilgili_mevzuat for n in l.maddeler)
+        parts['sorgu']=round(max((similarity(q,body) for q in e.metadata.get('arama_sorgulari',[])),default=0),3)
+        parts['baslik_kunye']=round(max((similarity(k,e.title) for k in analysis.anahtar_kavramlar),default=0),3)
+        parts['tam_metin']=round(max((similarity(k,e.text) for k in analysis.anahtar_kavramlar),default=0)*2,3)
         problem=normalize(analysis.hukuki_sorun+' '+analysis.hukuki_konu+' '+analysis.alt_konu)
         court=normalize(str(e.metadata.get('mahkeme') or ''))
         parts['mahkeme_daire']=.5 if court and (court in problem or any(w in problem and w in court for w in ['yargıtay','danıştay','anayasa'])) else 0
+        parts['daire']=.25 if court and re.search(r'\b\d+\.?\s*(?:hukuk|ceza|daire)',court) else 0
         parts['tarih']=0
         date=str(e.metadata.get('karar_tarihi') or '')
         for fmt in ['%d.%m.%Y','%Y-%m-%d','%d/%m/%Y']:

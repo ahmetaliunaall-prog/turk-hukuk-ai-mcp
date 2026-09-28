@@ -38,6 +38,19 @@ class Web(unittest.TestCase):
         self.assertEqual(c.exception.code,403)
     def test_valid_local_flow(self):
         async def fake(*args):return {'answer':'test','sources':[]}
-        with patch('local_ai.web.research',side_effect=fake):
-            with self.req('/api/research',{'Origin':'http://127.0.0.1:8765','X-Local-Token':TOKEN,'Content-Type':'application/json'},json.dumps({'text':'Objektif performans kriterleri nelerdir?'}).encode()) as r:
+        with patch('local_ai.web.research',side_effect=fake),patch('local_ai.web.validate_access',return_value=True) as auth:
+            with self.req('/api/research',{'Origin':'http://127.0.0.1:8765','X-Local-Token':TOKEN,'X-Access-Key':'Abc123Def456','Content-Type':'application/json'},json.dumps({'text':'Objektif performans kriterleri nelerdir?'}).encode()) as r:
                 self.assertEqual(json.load(r)['answer'],'test')
+                auth.assert_called_once_with('Abc123Def456','127.0.0.1',consume=True)
+    def test_access_key_required(self):
+        with self.assertRaises(urllib.error.HTTPError) as c:self.req('/api/research',{'Origin':'http://127.0.0.1:8765','X-Local-Token':TOKEN},b'{}')
+        self.assertEqual(c.exception.code,401)
+    def test_stream_reports_real_progress(self):
+        async def fake(*args,progress=None):
+            progress({'phase':'ictihat','message':'İçtihatlar aranıyor…'})
+            return {'answer':'test','sources':[]}
+        with patch('local_ai.web.research',side_effect=fake),patch('local_ai.web.validate_access',return_value=True):
+            with self.req('/api/research/stream',{'Origin':'http://127.0.0.1:8765','X-Local-Token':TOKEN,'X-Access-Key':'Abc123Def456'},json.dumps({'text':'Objektif performans kriterleri nelerdir?'}).encode()) as r:
+                events=[json.loads(line) for line in r.read().decode().splitlines()]
+                self.assertEqual([e['type'] for e in events],['progress','result'])
+                self.assertEqual(events[0]['data']['phase'],'ictihat')

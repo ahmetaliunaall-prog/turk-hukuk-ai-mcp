@@ -18,7 +18,7 @@ async def main():
         except Exception as ex: row={'name':name,'status':'FAIL','error':type(ex).__name__+': '+str(ex)[:250],'seconds':round(time.monotonic()-start,2)}
         results.append(row);print(json.dumps(row,ensure_ascii=False),flush=True)
     async def tags(): return any(m['name']=='qwen3:1.7b' for m in (await asyncio.to_thread(request,'/api/tags'))['models'])
-    async def model(): return bool(await chat('Kısa Türkçe cevap ver. /no_think','Hazır mısın?'))
+    async def model(): return bool(await chat('Tek kelime Türkçe cevap ver. /no_think','Hazır mısın?',max_tokens=8,timeout=45))
     await check('Ollama bağlantısı',tags);await check('Qwen 3 1.7B yanıtı',model)
     async with connect() as s:
         hits={};laws={};tree=[]
@@ -46,7 +46,7 @@ async def main():
         r=await research('İşveren objektif olmayan performans kriterleriyle işçiyi çıkardı. İşe iade ve savunma açısından hangi koşullar araştırılmalı?',mode='petition')
         Path('tests/research-live.json').write_text(json.dumps(r,ensure_ascii=False,indent=2),encoding='utf-8')
         return all(any(e['kind']==k and e['verified'] for e in r['sources']) for k in ['mevzuat','ictihat']) and bool(r['claims']) and bool(r['petition'])
-    await check('Qwen → MCP, çoklu sorgu, birleşik araştırma ve dilekçe',combined)
+    await check('Süre sınırlı Qwen desteği, MCP, birleşik araştırma ve dilekçe',combined)
     Path('tests/live-report.json').write_text(json.dumps(results,ensure_ascii=False,indent=2),encoding='utf-8')
     return 0 if all(r['status']=='PASS' for r in results) else 1
 

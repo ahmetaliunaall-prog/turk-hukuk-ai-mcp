@@ -1,0 +1,169 @@
+{
+  "baseline": {
+    "commit": "9a765a8",
+    "total_seconds": 354.438,
+    "phases": [
+      {
+        "phase": "qwen_plan",
+        "seconds": 175.211
+      },
+      {
+        "phase": "search_mevzuat",
+        "seconds": 2.16
+      },
+      {
+        "phase": "get_mevzuat_article_tree",
+        "seconds": 1.082
+      },
+      {
+        "phase": "get_mevzuat_article_content",
+        "seconds": 1.021
+      },
+      {
+        "phase": "get_mevzuat_article_content",
+        "seconds": 1.075
+      },
+      {
+        "phase": "get_mevzuat_article_content",
+        "seconds": 2.349
+      },
+      {
+        "phase": "ictihat_ara",
+        "seconds": 1.622
+      },
+      {
+        "phase": "ictihat_ara",
+        "seconds": 1.981
+      },
+      {
+        "phase": "ictihat_ara",
+        "seconds": 1.427
+      },
+      {
+        "phase": "karar_getir",
+        "seconds": 1.423
+      },
+      {
+        "phase": "karar_getir",
+        "seconds": 1.264
+      },
+      {
+        "phase": "karar_getir",
+        "seconds": 1.612
+      },
+      {
+        "phase": "karar_getir",
+        "seconds": 1.937
+      },
+      {
+        "phase": "karar_getir",
+        "seconds": 1.557
+      },
+      {
+        "phase": "karar_getir",
+        "seconds": 1.909
+      },
+      {
+        "phase": "karar_getir",
+        "seconds": 1.039
+      },
+      {
+        "phase": "karar_getir",
+        "seconds": 1.209
+      },
+      {
+        "phase": "karar_getir",
+        "seconds": 1.023
+      },
+      {
+        "phase": "karar_getir",
+        "seconds": 0.983
+      },
+      {
+        "phase": "qwen_select",
+        "seconds": 137.897
+      }
+    ],
+    "tool_calls": 18,
+    "http_calls": 20,
+    "max_concurrency": 1,
+    "source_count": 10,
+    "verified_count": 10,
+    "errors": []
+  },
+  "improved": [
+    {
+      "run": "cold",
+      "phases": {
+        "qwen_plan": 9.298,
+        "ictihat_ara": 13.096,
+        "search_mevzuat": 2.966,
+        "law_search_wall": 8.51,
+        "case_search_wall": 9.163,
+        "get_mevzuat_article_tree": 0.464,
+        "karar_getir": 46.314,
+        "get_mevzuat_article_content": 0.331,
+        "law_fetch_wall": 25.11,
+        "case_fetch_wall": 25.408,
+        "qwen_select": 0
+      },
+      "source_http_calls": 22,
+      "qwen_http_calls": 1,
+      "cache_hits": 0,
+      "max_concurrency": 3,
+      "candidate_cases": 97,
+      "candidate_laws": 17,
+      "qwen_fallback": true,
+      "selection_mode": "yerel birebir kaynak pasajı eşleşmesi",
+      "http_calls": 23,
+      "total_seconds": 61.868,
+      "sources_returned": 9,
+      "verified_sources": 9,
+      "errors": [
+        {
+          "asama": "qwen_plan",
+          "hata": "TimeoutError — süre sınırlı model desteği yerine kişisiz terim planı kullanıldı."
+        },
+        {
+          "asama": "karar_getir",
+          "hata": "RuntimeError: Resmî kaynak HTTP 429"
+        }
+      ],
+      "claims": 4,
+      "petition": true
+    },
+    {
+      "run": "warm",
+      "phases": {
+        "qwen_plan": 9.14,
+        "case_search_wall": 0.052,
+        "law_search_wall": 0.913,
+        "law_fetch_wall": 0.132,
+        "karar_getir": 0.431,
+        "case_fetch_wall": 0.578,
+        "qwen_select": 0
+      },
+      "source_http_calls": 1,
+      "qwen_http_calls": 1,
+      "cache_hits": 21,
+      "max_concurrency": 1,
+      "candidate_cases": 97,
+      "candidate_laws": 17,
+      "qwen_fallback": true,
+      "selection_mode": "yerel birebir kaynak pasajı eşleşmesi",
+      "http_calls": 2,
+      "total_seconds": 30.561,
+      "sources_returned": 10,
+      "verified_sources": 10,
+      "errors": [
+        {
+          "asama": "qwen_plan",
+          "hata": "TimeoutError — süre sınırlı model desteği yerine kişisiz terim planı kullanıldı."
+        }
+      ],
+      "claims": 4,
+      "petition": true
+    }
+  ],
+  "scope": "Pipeline ölçümü; UI/Supabase doğrulama ağ süresi dahil değil; aynı anonim işe iade sorusu, aynı makine."
+}
