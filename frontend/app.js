@@ -5,7 +5,7 @@ const base=local?'':'http://127.0.0.1:8765';
 let token='',mode='research',last=null,page=1,busy=false;
 if(local){const script=document.createElement('script');script.src='/session.js';script.onload=()=>{token=window.LOCAL_TOKEN||'';delete window.LOCAL_TOKEN};document.head.append(script)}
 function node(tag,text,cls){const n=document.createElement(tag);n.textContent=text;if(cls)n.className=cls;return n}
-async function status(){try{const r=await fetch(base+'/api/status');const d=await r.json();$('status').textContent=d.ready?'Yerel AI bağlı · Qwen 1.7B':'Yerel AI hazır değil';}catch{$('status').textContent='Yerel AI bağlantısı kapalı'}}
+async function status(){try{const r=await fetch(base+'/api/status',{signal:AbortSignal.timeout(8000)});const d=await r.json();$('status').textContent=d.ready?'Yerel AI bağlı · Qwen 1.7B':'Yerel AI hazır değil';}catch{$('status').textContent=local?'Yerel AI bağlantısı kapalı':'Yerel bağlantı için ağ izni gerekli olabilir'}}
 status();
 $('connection').onclick=()=>{$('settings').showModal()};
 $('save').onclick=e=>{e.preventDefault();token=$('localToken').value.trim();$('localToken').value='';$('settings').close();status()};

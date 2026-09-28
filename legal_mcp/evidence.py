@@ -45,6 +45,17 @@ def rank(items,analysis):
             parts[text]=weight*sum(w in body for w in words)/max(1,len(words))
         parts['kavram']=sum(normalize(k) in body for k in analysis.anahtar_kavramlar)
         parts['mevzuat']=sum(bool(re.search(r'\b'+re.escape(l.mevzuat_no)+r'\b',body)) for l in analysis.ilgili_mevzuat if l.mevzuat_no)
+        problem=normalize(analysis.hukuki_sorun+' '+analysis.hukuki_konu+' '+analysis.alt_konu)
+        court=normalize(str(e.metadata.get('mahkeme') or ''))
+        parts['mahkeme_daire']=.5 if court and (court in problem or any(w in problem and w in court for w in ['yargıtay','danıştay','anayasa'])) else 0
+        parts['tarih']=0
+        date=str(e.metadata.get('karar_tarihi') or '')
+        for fmt in ['%d.%m.%Y','%Y-%m-%d','%d/%m/%Y']:
+            try:
+                year=datetime.strptime(date,fmt).year
+                parts['tarih']=round(.2*max(0,min(1,(year-2000)/(datetime.now().year-2000))),3)
+                break
+            except ValueError: pass
         e.score=round(sum(parts.values()),3)
         e.metadata['alaka_bilesenleri']=parts
     return sorted(items,key=lambda e:e.score,reverse=True)

@@ -25,6 +25,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Origin',origin);self.send_header('Vary','Origin')
             self.send_header('Access-Control-Allow-Headers','Content-Type, X-Local-Token')
             self.send_header('Access-Control-Allow-Methods','GET, POST, OPTIONS')
+            if self.headers.get('Access-Control-Request-Private-Network')=='true':
+                self.send_header('Access-Control-Allow-Private-Network','true')
         self.end_headers()
     def json(self,code,data):
         self.headers_out(code);self.wfile.write(json.dumps(data,ensure_ascii=False).encode())

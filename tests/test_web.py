@@ -25,6 +25,17 @@ class Web(unittest.TestCase):
     def test_cross_origin_session_denied(self):
         with self.assertRaises(urllib.error.HTTPError) as c:self.req('/session.js',{'Origin':'https://evil.com'})
         self.assertEqual(c.exception.code,403)
+    def test_private_network_preflight_is_origin_bound(self):
+        headers={'Host':'127.0.0.1:8765','Origin':'http://127.0.0.1:8765','Access-Control-Request-Private-Network':'true'}
+        req=urllib.request.Request(f'http://127.0.0.1:{self.port}/api/research',headers=headers,method='OPTIONS')
+        with urllib.request.urlopen(req,timeout=5) as r:
+            self.assertEqual(r.status,204)
+            self.assertEqual(r.headers['Access-Control-Allow-Origin'],headers['Origin'])
+            self.assertEqual(r.headers['Access-Control-Allow-Private-Network'],'true')
+        headers['Origin']='https://evil.com'
+        req=urllib.request.Request(f'http://127.0.0.1:{self.port}/api/research',headers=headers,method='OPTIONS')
+        with self.assertRaises(urllib.error.HTTPError) as c:urllib.request.urlopen(req,timeout=5)
+        self.assertEqual(c.exception.code,403)
     def test_valid_local_flow(self):
         async def fake(*args):return {'answer':'test','sources':[]}
         with patch('local_ai.web.research',side_effect=fake):

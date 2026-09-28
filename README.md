@@ -12,6 +12,8 @@ Netlify arayüzü yerel sunucu çalışırken kullanılabilir. `config/local.exa
 
 ## Mimari
 
+Model kaynak pasajlarının kimliklerini seçer; birebir alıntı metni kaynak tablosundan alınır. Böylece uzun metni modelin yeniden üretmesi gerekmez. Kaynak sıra puanı sorun/konu/alt konu/kavram/kanun eşleşmeleri, uygun mahkeme/daire ve düşük ağırlıklı tarih sinyaliyle açıklanabilir; ağır embedding kullanılmaz.
+
 Kullanıcı → yerel maskeleme → Qwen hukuki problem/araştırma planı → MCP istemcisi → birleşik MCP → mevcut içtihat/mevzuat istemcileri → tekrar temizleme → bağlamsal sıralama → kaynak metni doğrulama → Qwen alıntı seçimi → kaynaklı araştırma taslağı.
 
 `local_ai/`: localhost Ollama ve HTTP köprüsü. `legal_mcp/`: adapter, MCP sunucu/istemci, araştırma, kaynak ve gizlilik katmanları. `vendor/`: lisanslı kaynak istemcileri. `frontend/`: bağımlılıksız web arayüzü. `config/`: yerel ayar örneği. `tests/`: birim ve canlı testler.
