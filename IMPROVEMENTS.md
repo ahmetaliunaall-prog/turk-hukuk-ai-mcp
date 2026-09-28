@@ -26,7 +26,7 @@ Mevcut proje `ztkopywelwximjiopdci`; yalnız yeni `thaimcp_admins`, `thaimcp_api
 
 ## 7. Netlify deploy
 
-Mevcut proje https://turk-hukuk-ai-mcp.netlify.app; main bağlı yayın, publish `frontend/`, CSP Supabase/localhost. DNS/domain ve diğer projeler değiştirilmez. Yerel model Netlify'a taşınmaz. Yayın doğrulaması TEST_REPORT teslim notuna işlenir.
+Mevcut proje https://turk-hukuk-ai-mcp.netlify.app; main bağlı yayın, publish `frontend/`, CSP Supabase/localhost. DNS/domain ve diğer projeler değiştirilmez. Yerel model Netlify'a taşınmaz. Yayın Published ve production HTTP 200 doğrulandı; canlı yönetici girişi/listesi başarılı. Tarayıcı localhost izin sınırı TEST_REPORT içinde.
 
 ## 8. Test sonuçları
 
