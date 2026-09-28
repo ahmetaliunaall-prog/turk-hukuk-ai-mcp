@@ -1,0 +1,6 @@
+mcp==2.2.0
+httpx==0.28.1
+markdownify==1.2.3
+beautifulsoup4>=4.14,<5
+pydantic>=2.13,<3
+anyio>=4,<5

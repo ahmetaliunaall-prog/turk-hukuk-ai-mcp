@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.venv/
+.netlify/
+data/
+config/local.json
+tests/live-report.json
+tests/research-live.json
+*.log

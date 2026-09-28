@@ -1,0 +1,9 @@
+fastmcp[cli]==2.9.2
+pydantic
+httpx
+beautifulsoup4
+lxml
+markitdown
+beautifulsoup4
+fastapi
+uvicorn
