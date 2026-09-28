@@ -18,5 +18,8 @@ async def call(session,name,args):
     if result.structured_content is not None:
         data=result.structured_content
         return data.get('result',data)
-    text=''.join(c.text for c in result.content if getattr(c,'type','')=='text')
-    return json.loads(text)
+    blocks=[json.loads(c.text) for c in result.content if getattr(c,'type','')=='text' and c.text.strip()]
+    if name=='get_mevzuat_article_tree':
+        return blocks[0] if len(blocks)==1 and isinstance(blocks[0],list) else blocks
+    if len(blocks)!=1: raise ValueError('MCP beklenmeyen yanıt biçimi')
+    return blocks[0]

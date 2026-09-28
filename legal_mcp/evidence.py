@@ -3,7 +3,7 @@ import hashlib,re
 from urllib.parse import urlparse
 from datetime import datetime,timezone
 
-ALLOWED={'emsal.uyap.gov.tr','karararama.danistay.gov.tr','kararlarbilgibankasi.anayasa.gov.tr','mevzuat.adalet.gov.tr','mevzuat.gov.tr','bedesten.adalet.gov.tr'}
+ALLOWED={'emsal.uyap.gov.tr','karararama.danistay.gov.tr','kararlarbilgibankasi.anayasa.gov.tr','mevzuat.adalet.gov.tr','mevzuat.gov.tr','www.mevzuat.gov.tr','bedesten.adalet.gov.tr'}
 
 @dataclass
 class Evidence:
@@ -59,6 +59,19 @@ def accepted_claims(data,items):
         if e and 40<=len(quote)<=900 and quote in e.text:
             claims.append({'kaynak_id':e.id,'alinti':quote,'baslik':e.title})
     return claims
+
+def source_passages(items,analysis):
+    """Model alıntısı doğrulanamazsa metinden birebir pasaj; serbest iddia yok."""
+    result=[]
+    for e in items:
+        if not e.verified: continue
+        segments=list(re.finditer(r'[^\n.!?]{40,450}(?:[.!?]|$)',e.text))
+        if not segments: continue
+        scored=[(sum(normalize(k) in normalize(m.group()) for k in analysis.anahtar_kavramlar),m.group().strip()) for m in segments]
+        score,passage=max(scored,key=lambda pair:pair[0])
+        if score and passage in e.text:
+            result.append({'kaynak_id':e.id,'alinti':passage,'baslik':e.title,'secim':'kaynak pasajı — otomatik metin eşleşmesi'})
+    return result[:4]
 
 def related_articles(items):
     relations=[]

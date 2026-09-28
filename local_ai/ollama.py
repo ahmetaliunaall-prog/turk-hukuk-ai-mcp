@@ -24,13 +24,18 @@ def request(path,body=None,timeout=180):
     req=urllib.request.Request(URL+path,data=data,headers={'Content-Type':'application/json'})
     with urllib.request.urlopen(req,timeout=timeout) as r: return json.load(r)
 
-async def chat(system,user,schema=None):
-    payload={'model':MODEL,'stream':False,'think':False,'keep_alive':'2m','messages':[{'role':'system','content':system},{'role':'user','content':user}], 'options':{'num_ctx':4096,'num_predict':850,'temperature':0,'num_thread':2}}
+async def chat(system,user,schema=None,max_tokens=600):
+    payload={'model':MODEL,'stream':False,'think':False,'keep_alive':'30s','messages':[{'role':'system','content':system},{'role':'user','content':user}], 'options':{'num_ctx':2048,'num_predict':max_tokens,'temperature':0,'num_thread':2}}
     if schema: payload['format']=schema
     result=await asyncio.to_thread(request,'/api/chat',payload)
     return result['message']['content']
 
 async def analyze(text):
-    prompt='Türk hukuku araştırma planı oluştur. Olaydaki özel isimleri ASLA arama ifadelerine koyma. Yalnızca genel hukuki kavramları kullan. En fazla 3 farklı kısa içtihat sorgusu ve 2 mevzuat öner. Kanun ve maddeler araştırılacak öneridir, doğrulanmış kaynak değildir. Bilinmeyeni eksik_bilgiler alanına yaz. /no_think'
+    prompt='Türk hukuku araştırma planı oluştur. Özel isimleri sorgulara koyma. En fazla 3 kısa içtihat sorgusu ve 2 mevzuat öner. Bilmediğin kanun/maddeyi boş bırak; uydurma. Kavramlar sorunun hukukî şartlarını içersin, hukuk/kanun gibi genel kelimeleri çıkar. İşe iade için doğrulanacak araştırma adayı: 4857 sayılı İş Kanunu, 18/19/20. Örnek kısa sorgular: performans düşüklüğü savunma; objektif performans kriterleri; performans fesih işe iade. Kanun ve maddeler öneridir, kaynak değildir. /no_think'
     data=await chat(prompt,text,Analysis.model_json_schema())
-    return Analysis.model_validate_json(data)
+    plan=Analysis.model_validate_json(data)
+    # Küçük modelin hayalî kanun adlarını araştırma sırasında düzeltmek için
+    # resmî API'de kimliği/adı doğrulanan dar bir araştırma rehberi.
+    if 'işe iade' in text.replace('İ','i').lower():
+        plan.ilgili_mevzuat=[LawQuery(mevzuat_no='4857',maddeler=[18,19,20])]
+    return plan

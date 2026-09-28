@@ -1,6 +1,7 @@
 """Canlı testler: başarısızlığı atlama veya başarılı olarak etiketleme yok."""
 import asyncio,json,sys,time
 from pathlib import Path
+sys.stdout.reconfigure(encoding='utf-8')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from local_ai.ollama import request,chat,analyze
 from legal_mcp.client import connect,call

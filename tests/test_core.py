@@ -1,7 +1,7 @@
 import unittest,asyncio,json
 from local_ai.ollama import Analysis
 from legal_mcp.privacy import mask,public_query
-from legal_mcp.evidence import Evidence,deduplicate,rank,accepted_claims,related_articles
+from legal_mcp.evidence import Evidence,deduplicate,rank,accepted_claims,related_articles,source_passages
 from legal_mcp.server import make_server
 from legal_mcp.client import connect,call
 
@@ -40,12 +40,20 @@ class Core(unittest.TestCase):
         a=Evidence('a','ictihat','t','https://emsal.uyap.gov.tr/x','performans değerlendirmesi '*4);a.verify()
         b=Evidence('b','mevzuat','t','https://mevzuat.gov.tr/x','kanun metni '*7,{'kanun_no':4857,'madde_no':19});b.verify()
         self.assertEqual(related_articles([a,b]),[])
+    def test_fallback_is_exact_source(self):
+        e=Evidence('x','ictihat','t','https://emsal.uyap.gov.tr/x','Objektif performans kriterleri savunma hakkı kapsamında araştırılır.');e.verify()
+        selected=source_passages([e],analysis())
+        self.assertEqual(len(selected),1);self.assertIn(selected[0]['alinti'],e.text)
     def test_tools_ictihat(self):
         self.assertEqual(len(asyncio.run(make_server('ictihat').list_tools())),2)
     def test_tools_mevzuat(self):
         self.assertEqual(len(asyncio.run(make_server('mevzuat').list_tools())),3)
     def test_tools_unified(self):
         self.assertEqual(len(asyncio.run(make_server().list_tools())),5)
+    def test_nullable_article_title(self):
+        from mevzuat_models import MevzuatArticleNode
+        n=MevzuatArticleNode.model_validate({'maddeId':'x','mevzuatId':'y','title':None,'children':[]})
+        self.assertIsNone(n.title)
 
 class Protocol(unittest.IsolatedAsyncioTestCase):
     async def test_stdio_tool_discovery(self):
